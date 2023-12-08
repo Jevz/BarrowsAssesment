@@ -1,0 +1,49 @@
+version: "3.7"
+services:
+    app:
+        build:
+            args:
+                user: adminUser
+                uid: 1000
+            context: ./
+            dockerfile: ./docker/app/Dockerfile
+        image: test_app
+        container_name: test_app
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www
+        networks:
+            - bridge_network
+
+    nginx:
+        image: nginx:1.17-alpine
+        container_name: test_nginx
+        restart: unless-stopped
+        ports:
+            - '8001:80'
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx:/etc/nginx/conf.d/
+        networks:
+            - bridge_network
+
+    db:
+        image: mysql:8.0
+        container_name: test_db
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: testDb
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_USER: ${DB_USERNAME}
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        ports:
+            - '3306:3306'
+        networks:
+            - bridge_network
+
+networks:
+    bridge_network:
+        driver: bridge
