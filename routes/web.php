@@ -16,13 +16,3 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-
-Route::get('/test', function () {
-   $posts = \App\Models\Post::query()
-       ->with('comments')
-       ->limit(5)
-       ->withCount('likes')
-       ->get()->toArray();
-
-   dd($posts);
-});
