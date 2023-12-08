@@ -35,6 +35,7 @@ class CommentFactory extends Factory
     {
         return $this->state(fn(array $attributes) => [
             'post_id' => $post->id,
+            'created_at' =>fake()->dateTimeBetween($post->created_at)
         ]);
     }
 }

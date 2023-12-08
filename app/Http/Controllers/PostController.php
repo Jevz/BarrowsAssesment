@@ -24,6 +24,7 @@ class PostController extends Controller
         $filterWord = Str::lower(request()->filter);
 
         return Post::query()->select('*')
+                   ->with('user:id,name')
                    ->when(request()->with_comments, function ($query) {
                        $query->with('comments');
                    })
@@ -49,6 +50,7 @@ class PostController extends Controller
 
             $likeEstimation = (new PostLikeEstimatorService($post))->predict();
             return response()->json([
+                'id'      => $post->id,
                 'message'         => "Post created successfully",
                 'like_estimation' => $likeEstimation
             ]);
@@ -65,7 +67,7 @@ class PostController extends Controller
      */
     public function show(Post $post): Post
     {
-        return $post->load('comments')->loadCount('likes');
+        return $post->load(['comments', 'user:id,name'])->loadCount('likes');
     }
 
     /**
@@ -84,6 +86,28 @@ class PostController extends Controller
             ]);
 
             return response()->json(['message' => "Post flagged successfully!"]);
+
+        } catch (Exception $exception) {
+            return response()->json([
+                'message' => "Something went wrong: {$exception->getMessage()}",
+                'code'    => $exception->getCode()
+            ]);
+        }
+    }
+
+    /**
+     * Like the resource.
+     */
+    public function like(Post $post): JsonResponse
+    {
+        $authUser = Auth::user();
+
+        $userAlreadyLikedPost = $post->likes()->where('user_id', $authUser->id)->exists();
+        abort_if($userAlreadyLikedPost, 422, "Post already liked.");
+
+        try {
+            $post->likes()->create(['user_id'=>$authUser->id]);
+            return response()->json(['message' => "Post liked successfully!"]);
 
         } catch (Exception $exception) {
             return response()->json([

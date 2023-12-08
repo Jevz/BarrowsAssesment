@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class StorePostRequest extends FormRequest
+class StoreCommentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,7 +23,8 @@ class StorePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content' => "required|string|min:20|max:100"
+            'post_id'=> 'required|numeric|exists:App\Models\Post,id',
+            'content'=>'required|string|min:20|max:150'
         ];
     }
 }

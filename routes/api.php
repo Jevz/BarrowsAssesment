@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\StatsController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,6 +24,12 @@ Route::group(['prefix' => 'auth'], function () {
 
 Route::group(['prefix' => 'posts'], function () {
     Route::get('/', [PostController::class, 'index']);
+    Route::get('/{post}', [PostController::class, 'show']);
+});
+
+Route::group(['prefix' => 'comments'], function () {
+    Route::get('/', [CommentController::class, 'index']);
+    Route::get('/{comment}', [CommentController::class, 'show']);
 });
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
@@ -32,9 +38,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     });
 
     Route::group(['prefix' => 'posts'], function () {
-        Route::get('/{post}', [PostController::class, 'show']);
         Route::post('/{post}/flag', [PostController::class, 'flag']);
+        Route::post('/{post}/like', [PostController::class, 'like']);
         Route::post('/create', [PostController::class, 'create']);
+    });
+
+    Route::group(['prefix' => 'comments'], function () {
+        Route::post('/create', [CommentController::class, 'create']);
     });
 
     Route::get('/stats', [StatsController::class, 'index']);
