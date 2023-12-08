@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
-use App\Http\Requests\UpdatePostRequest;
 use App\Jobs\ExtractKeywordsFromPostJob;
 use App\Models\Post;
 use App\Services\PostLikeEstimatorService;
