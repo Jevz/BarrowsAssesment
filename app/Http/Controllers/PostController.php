@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Jobs\ExtractKeywordsFromPostJob;
 use App\Models\Post;
+use App\Services\PostLikeEstimatorService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
@@ -42,11 +44,13 @@ class PostController extends Controller
     {
         try {
 
-            $request->user()->posts()->create($request->validated());
+            $post = $request->user()->posts()->create($request->validated());
+            ExtractKeywordsFromPostJob::dispatchSync($post->id);
 
+            $likeEstimation = (new PostLikeEstimatorService($post))->predict();
             return response()->json([
                 'message'         => "Post created successfully",
-                'like_estimation' => 50 // TODO: Add estimation
+                'like_estimation' => $likeEstimation
             ]);
         } catch (Exception $exception) {
             return response()->json([

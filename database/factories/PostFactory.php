@@ -25,12 +25,6 @@ class PostFactory extends Factory
             'content' => $this->createContent(),
         ];
 
-        $modelData['keywords'] = Arr::join(
-            (new KeywordExtractionService())
-                ->extractTopKeywords($modelData['content'], Post::query()->pluck('content')->toArray()),
-            ","
-        );
-
         // If true, post has not been flagged
         if (fake()->boolean(70)) {
             return $modelData;
