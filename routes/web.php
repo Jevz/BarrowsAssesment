@@ -18,5 +18,11 @@ Route::get('/', function () {
 });
 
 Route::get('/test', function () {
-    dd(\App\Models\User::first()->toArray());
+   $posts = \App\Models\Post::query()
+       ->with('comments')
+       ->limit(5)
+       ->withCount('likes')
+       ->get()->toArray();
+
+   dd($posts);
 });
