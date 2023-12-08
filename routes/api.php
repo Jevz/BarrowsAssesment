@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\StatsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,25 +20,22 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'auth'], function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
+});
 
-    Route::group(['middleware' => 'auth:sanctum'], function () {
-        Route::get('logout', [AuthController::class, 'logout']);
-        Route::get('user', [AuthController::class, 'user']);
-    });
+Route::group(['prefix' => 'posts'], function () {
+    Route::get('/', [PostController::class, 'index']);
 });
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
-    Route::get('logout', [AuthController::class, 'logout']);
+    Route::group(['prefix' => 'auth'], function () {
+        Route::get('logout', [AuthController::class, 'logout']);
+    });
 
     Route::group(['prefix' => 'posts'], function () {
-        Route::get('/', [PostController::class, 'index']);
         Route::get('/{post}', [PostController::class, 'show']);
         Route::post('/{post}/flag', [PostController::class, 'flag']);
         Route::post('/create', [PostController::class, 'create']);
     });
 
-});
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+    Route::get('/stats', [StatsController::class, 'index']);
 });

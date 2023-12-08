@@ -23,6 +23,7 @@ class PostFactory extends Factory
         $modelData = [
             'user_id' => User::inRandomOrder()->select('id')->limit(1)->first()->id,
             'content' => $this->createContent(),
+            'created_at' => fake()->dateTimeBetween('-1 day')
         ];
 
         // If true, post has not been flagged
