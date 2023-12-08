@@ -2,12 +2,14 @@
 
 namespace Database\Factories;
 
+use App\Models\Post;
 use App\Models\User;
+use App\Services\KeywordExtractionService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Post>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Post>
  */
 class PostFactory extends Factory
 {
@@ -23,8 +25,14 @@ class PostFactory extends Factory
             'content' => $this->createContent(),
         ];
 
+        $modelData['keywords'] = Arr::join(
+            (new KeywordExtractionService())
+                ->extractTopKeywords($modelData['content'], Post::query()->pluck('content')->toArray()),
+            ","
+        );
+
         // If true, post has not been flagged
-        if(fake()->boolean(70)){
+        if (fake()->boolean(70)) {
             return $modelData;
         }
 
@@ -38,7 +46,7 @@ class PostFactory extends Factory
     {
         return $this->state(fn(array $attributes) => [
             'flagged_as_misleading' => true,
-            'flagged_by' => User::admin()->inRandomOrder()->limit(1)->select('id')->first()->id
+            'flagged_by'            => User::admin()->inRandomOrder()->limit(1)->select('id')->first()->id
         ]);
     }
 

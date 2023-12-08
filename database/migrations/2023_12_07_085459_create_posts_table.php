@@ -19,6 +19,7 @@ return new class extends Migration
             $table->longText('content');
             $table->boolean('flagged_as_misleading')->default(false);
             $table->foreignIdFor(User::class, 'flagged_by')->nullable();
+            $table->string('keywords');
 
             $table->timestamps();
         });
