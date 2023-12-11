@@ -31,7 +31,7 @@ class PostController extends Controller
                        // This works by calculating the length of the content minus the length of the content with the search word removed
                        // Using this length and the length of the search word, we can then work out the number of occurrences
                        $query
-                           ->selectRaw("FLOOR((LENGTH(LOWER(content)) - LENGTH(REPLACE(LOWER(content), '$filterWord', ''))) / LENGTH('$filterWord')) as search_phrase_count")
+                           ->selectRaw("FLOOR((LENGTH(LOWER(content)) - Length(REGEXP_REPLACE(LOWER(content), ?, ''))) / Length('$filterWord')) as search_phrase_count", ['\\b' . $filterWord . '\\b'])
                            ->orderByDesc("search_phrase_count");
                    })
                    ->get();
@@ -100,6 +100,7 @@ class PostController extends Controller
     public function like(Post $post): JsonResponse
     {
         $authUser = Auth::user();
+        abort_if($post->user_id === $authUser->id, 422, "Sorry, you cannot like your own post.");
 
         $userAlreadyLikedPost = $post->likes()->where('user_id', $authUser->id)->exists();
         abort_if($userAlreadyLikedPost, 422, "Post already liked.");

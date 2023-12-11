@@ -20,12 +20,6 @@ class UserSeeder extends Seeder
             'password' => Hash::make('Hey.Admin.1234!'),
         ]);
 
-        User::factory()->create([
-            'name' => 'Normal User',
-            'email' => 'normal@test.com',
-            'password' => Hash::make('Hey.1234!'),
-        ]);
-
         User::factory()->createMany(50);
     }
 }
