@@ -20,18 +20,21 @@ class PostController extends Controller
      */
     public function index(): Collection|array
     {
-        $filterWord = Str::lower(request()->filter);
+        $orderByWord = Str::lower(request()->order_by_occurrence) ?? null;
 
         return Post::query()->select('*')
                    ->with('user:id,name')
                    ->when(request()->with_comments, function ($query) {
                        $query->with('comments');
                    })
-                   ->when(request()->filter != null, function ($query) use ($filterWord) {
+                   ->when($orderByWord != null, function ($query) use ($orderByWord) {
                        // This works by calculating the length of the content minus the length of the content with the search word removed
                        // Using this length and the length of the search word, we can then work out the number of occurrences
                        $query
-                           ->selectRaw("FLOOR((LENGTH(LOWER(content)) - Length(REGEXP_REPLACE(LOWER(content), ?, ''))) / Length('$filterWord')) as search_phrase_count", ['\\b' . $filterWord . '\\b'])
+                           ->selectRaw(
+                               "FLOOR((LENGTH(LOWER(content)) - Length(REGEXP_REPLACE(LOWER(content), ?, ''))) / Length('$orderByWord')) as search_phrase_count",
+                               ['\\b' . $orderByWord . '\\b']
+                           )
                            ->orderByDesc("search_phrase_count");
                    })
                    ->get();
@@ -49,7 +52,7 @@ class PostController extends Controller
 
             $likeEstimation = (new PostLikeEstimatorService($post))->predict();
             return response()->json([
-                'id'      => $post->id,
+                'id'              => $post->id,
                 'message'         => "Post created successfully",
                 'like_estimation' => $likeEstimation
             ]);
@@ -106,7 +109,7 @@ class PostController extends Controller
         abort_if($userAlreadyLikedPost, 422, "Post already liked.");
 
         try {
-            $post->likes()->create(['user_id'=>$authUser->id]);
+            $post->likes()->create(['user_id' => $authUser->id]);
             return response()->json(['message' => "Post liked successfully!"]);
 
         } catch (Exception $exception) {
